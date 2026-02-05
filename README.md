@@ -10,8 +10,11 @@ This is a lightweight, static project: everything lives in `index.html`.
 
 ## About this project and where it is used.
 Every month I gather about 40 images and I print them with a [Liene Photo Printer](https://amzn.to/3M8dACE).
-I add the photos to our family album/journal. This album serves to keeps memories of our year as a family and also generates gratitude. To save money on the photopaper and I put these images in a grid layout. When creating these grids, I spent a lot of time on Canva or Figma sorting out portrait and landscape images. Trying to find the most optimum way to utilize photo paper. It cost me in time, though.
-Here's a shot of our photo album. ![Image of Album](album-example.png)
+I add the photos to our family album/journal. This album serves to keeps memories of our year as a family and also generates gratitude. To save money on the photopaper and I put these images in a grid layout. When creating these grids, I spent a lot of time on Canva or Figma sorting out portrait and landscape images in a grid. Trying to find the most optimum way to utilize photo paper. It cost me in time, though.
+
+Here's a shot of our photo album.
+
+![Image of Album](album-example.png)
 
 I utilized my development experience to create this tool built in pure JavaScript. It has been one of the best things I have ever built. ✨
 You can see it working on my website: [magaliechetrit.com/photo-grid-maker](https://magaliechetrit.com/photo-grid-maker).
@@ -92,6 +95,7 @@ All processing happens locally in your browser.
 ## Future Features
 - Date-based naming (e.g., january_2025_portrait_01.jpg)
 - Option to choose grid size (4 or 6 portraits per page)
+- Option for bigger photo size, 5x7
 - A list of file names
     - Detect duplicate files
     - Option to remove duplicates/files from list
