@@ -10,7 +10,7 @@ This is a lightweight, static project: everything lives in `index.html`.
 
 ## About this project and where it is used.
 Every month I gather about 40 images and I print them with a [Liene Photo Printer](https://amzn.to/3M8dACE).
-I add the photos to our family album/journal. This album serves to keeps memories of our year as a family and also generates gratitude. To save money on the photopaper and I put these images in a grid layout. When creating these grids, I spent a lot of time on Canva or Figma sorting out portrait and landscape images in a grid. Trying to find the most optimum way to utilize photo paper. It cost me in time, though.
+I add the photos to our family album/journal. This album serves to keeps memories of our year as a family and also generates gratitude. To save money on the photopaper, I put these images in a grid layout so I can print multiple images on one sheet. When creating these grids, I spent a lot of time on Canva or Figma sorting out portrait and landscape images in a grid. Trying to find the most optimum way to utilize photo paper. It cost me in time, though.
 
 Here's a shot of our photo album.
 
