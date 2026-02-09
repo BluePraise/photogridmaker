@@ -5,8 +5,8 @@ const PORTRAIT_SLOT = { width: 600, height: 900 };
 const LANDSCAPE_SLOT = { width: 1200, height: 900 };
 
 // State
-let portraits = [];
-let landscapes = [];
+let fileEntries = []; // { id, name, img, orientation }
+let nextId = 0;
 let generatedGrids = { portrait: [], landscape: [] };
 
 // DOM elements
@@ -17,6 +17,8 @@ const warning = document.getElementById('warning');
 const actions = document.getElementById('actions');
 const previewSection = document.getElementById('preview-section');
 const downloadActions = document.getElementById('download-actions');
+const fileList = document.getElementById('file-list');
+const fileListBody = document.getElementById('file-list-body');
 const portraitPreview = document.getElementById('portrait-preview');
 const landscapePreview = document.getElementById('landscape-preview');
 
@@ -51,19 +53,68 @@ function handleFileSelect(e) {
 }
 
 async function processFiles(files) {
-    portraits = [];
-    landscapes = [];
-
     for (const file of files) {
         const img = await loadImage(file);
-        if (img.height >= img.width) {
-            portraits.push(img);
-        } else {
-            landscapes.push(img);
-        }
+        const orientation = img.height >= img.width ? 'portrait' : 'landscape';
+        const thumb = createThumbnail(img, 40);
+        fileEntries.push({ id: nextId++, name: file.name, img, orientation, thumb });
     }
 
+    renderFileList();
     updateStats();
+}
+
+function createThumbnail(img, maxSize) {
+    const scale = Math.min(maxSize / img.width, maxSize / img.height);
+    const w = Math.round(img.width * scale);
+    const h = Math.round(img.height * scale);
+    const canvas = document.createElement('canvas');
+    canvas.width = w;
+    canvas.height = h;
+    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+    return canvas.toDataURL('image/jpeg', 0.7);
+}
+
+function removeFile(id) {
+    fileEntries = fileEntries.filter(e => e.id !== id);
+    renderFileList();
+    if (fileEntries.length === 0) {
+        fileList.classList.add('hidden');
+        stats.classList.add('hidden');
+        warning.classList.add('hidden');
+        actions.classList.add('hidden');
+        previewSection.classList.add('hidden');
+        downloadActions.classList.add('hidden');
+    } else {
+        updateStats();
+    }
+}
+
+function renderFileList() {
+    fileListBody.innerHTML = '';
+    if (fileEntries.length === 0) {
+        fileList.classList.add('hidden');
+        return;
+    }
+    fileList.classList.remove('hidden');
+    fileEntries.forEach(entry => {
+        const tr = document.createElement('tr');
+        const badgeClass = entry.orientation === 'portrait' ? 'portrait' : 'landscape';
+        const label = entry.orientation === 'portrait' ? 'Portrait' : 'Landscape';
+        tr.innerHTML = `
+            <td><img class="file-thumb" src="${entry.thumb}" alt=""> ${escapeHtml(entry.name)}</td>
+            <td><span class="orientation-badge ${badgeClass}">${label}</span></td>
+            <td><button class="remove-btn" title="Remove">✕</button></td>
+        `;
+        tr.querySelector('.remove-btn').addEventListener('click', () => removeFile(entry.id));
+        fileListBody.appendChild(tr);
+    });
+}
+
+function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
 }
 
 function loadImage(file) {
@@ -78,7 +129,17 @@ function loadImage(file) {
     });
 }
 
+function getPortraits() {
+    return fileEntries.filter(e => e.orientation === 'portrait').map(e => e.img);
+}
+
+function getLandscapes() {
+    return fileEntries.filter(e => e.orientation === 'landscape').map(e => e.img);
+}
+
 function updateStats() {
+    const portraits = getPortraits();
+    const landscapes = getLandscapes();
     const portraitGrids = Math.ceil(portraits.length / 4);
     const landscapeGrids = Math.ceil(landscapes.length / 2);
     const totalGrids = portraitGrids + landscapeGrids;
@@ -127,6 +188,8 @@ function resizeToFill(img, targetWidth, targetHeight) {
 }
 
 function generateGrids() {
+    const portraits = getPortraits();
+    const landscapes = getLandscapes();
     generatedGrids = { portrait: [], landscape: [] };
     portraitPreview.innerHTML = '';
     landscapePreview.innerHTML = '';
@@ -212,12 +275,14 @@ async function downloadZip() {
 }
 
 function clearAll() {
-    portraits = [];
-    landscapes = [];
+    fileEntries = [];
+    nextId = 0;
     generatedGrids = { portrait: [], landscape: [] };
     fileInput.value = '';
+    fileListBody.innerHTML = '';
     portraitPreview.innerHTML = '';
     landscapePreview.innerHTML = '';
+    fileList.classList.add('hidden');
     stats.classList.add('hidden');
     warning.classList.add('hidden');
     actions.classList.add('hidden');

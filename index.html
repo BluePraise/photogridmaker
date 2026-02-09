@@ -21,6 +21,20 @@
         <input type="file" id="file-input" multiple accept="image/*">
     </div>
 
+    <div class="file-list hidden" id="file-list">
+        <h2>Uploaded Files</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>File Name</th>
+                    <th>Type</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody id="file-list-body"></tbody>
+        </table>
+    </div>
+
     <div class="stats hidden" id="stats">
         <div class="stat-box">
             <div class="number" id="portrait-count">0</div>

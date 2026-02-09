@@ -93,12 +93,12 @@ All processing happens locally in your browser.
 - Output is generated in-memory and downloaded directly.
 
 ## Future Features
-- Date-based naming (e.g., january_2025_portrait_01.jpg)
-- Option to choose grid size (4 or 6 portraits per page)
-- Option for bigger photo size, 5x7
 - A list of file names
     - Detect duplicate files
     - Option to remove duplicates/files from list
+- Date-based naming (e.g., january_2025_portrait_01.jpg) for file and folder
+- Option to choose grid size (4 or 6 portraits per page)
+- Option for bigger photo size, 5x7
 - Button to generate and download the photo grid as a PDF
 - Styling for a clean, user-friendly interface
 
