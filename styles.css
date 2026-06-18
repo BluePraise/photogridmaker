@@ -20,6 +20,26 @@ h1 {
     margin-bottom: 2rem;
 }
 
+.paper-size {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+}
+
+.paper-size__option {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: #374151;
+    cursor: pointer;
+}
+
+.paper-size__option input {
+    cursor: pointer;
+}
+
 .drop-zone {
     border: 2px dashed #d1d5db;
     border-radius: 12px;

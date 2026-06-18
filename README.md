@@ -1,10 +1,16 @@
 # Photo Grid Maker
 
-Create print-ready **4×6** photo grids in your browser.
+Create print-ready photo grids in your browser for **4×6** or **Letter (8.5×11)** paper.
 
-- **Portrait photos** → arranged into **2×2** grids (4 photos per sheet)
-- **Landscape photos** → arranged into **2×1** stacks (2 photos per sheet)
-- Export everything as a single **ZIP** containing high-quality JPGs
+**4×6 paper:**
+- **Portrait photos** → **2×2** grids (4 photos per sheet)
+- **Landscape photos** → **2×1** stacks (2 photos per sheet)
+
+**Letter paper (8.5×11):**
+- **Portrait photos** → **4×3** grids (12 photos per sheet)
+- **Landscape photos** → **2×3** stacks (6 photos per sheet)
+
+Export everything as a single **ZIP** containing high-quality JPGs
 
 This is a lightweight, static project: everything lives in `index.html`.
 
@@ -23,19 +29,25 @@ You can see it working on my website: [magaliechetrit.com/photo-grid-maker](http
 
 - Drag & drop or file picker upload
 - Automatically sorts photos into portrait vs landscape
-- Generates print-ready canvases sized for **4×6 at 300 DPI**
+- Choose paper size: **4×6** or **Letter (8.5×11)** — toggle before generating
+- Generates print-ready canvases at **300 DPI**
 - One-click ZIP download (via JSZip)
 - On-screen preview before download
 - Helpful warnings when the number of photos doesn’t evenly fill a grid
 
 ## How it works
 
-Each output image is rendered to a canvas:
+Each output image is rendered to a canvas at 300 DPI. Photo slot sizes stay the same across paper sizes — only the number of slots per sheet changes.
 
-- Canvas size: **1200 × 1800** pixels (4×6 inches at 300 DPI)
+| Paper | Canvas (px) | Portrait grid | Landscape grid |
+|-------|-------------|---------------|----------------|
+| 4×6 | 1200 × 1800 | 2×2 (4 photos) | 1×2 (2 photos) |
+| Letter 8.5×11 | 2550 × 3300 | 4×3 (12 photos) | 2×3 (6 photos) |
+
 - Portrait slot size: **600 × 900** pixels
 - Landscape slot size: **1200 × 900** pixels
-- Images are resized using a **“cover”** strategy (cropped to fill the slot)
+- On Letter paper, slots are centered with equal margins on all sides
+- Images are resized using a **”cover”** strategy (cropped to fill the slot)
 
 ## Run locally
 
@@ -61,10 +73,11 @@ npx serve .
 ## Usage
 
 1. Open the app in your browser.
-2. Drag & drop photos onto the drop zone (or click to browse).
-3. Review the counts and any warnings.
-4. Click **Generate Grids**.
-5. Click **Download All (ZIP)**.
+2. Select your paper size: **4×6** or **Letter 8.5×11**.
+3. Drag & drop photos onto the drop zone (or click to browse).
+4. Review the counts and any warnings.
+5. Click **Generate Grids**.
+6. Click **Download All (ZIP)**.
 
 The ZIP will contain files like:
 
@@ -78,7 +91,9 @@ The ZIP will contain files like:
 
 ## Project structure
 
-- `index.html` — UI + all logic (no build step)
+- `index.html` — markup and UI controls
+- `app.js` — all grid generation logic
+- `styles.css` — styles
 - `sample-photos/` — example images to test with
 
 ## Dependencies
@@ -93,14 +108,11 @@ All processing happens locally in your browser.
 - Output is generated in-memory and downloaded directly.
 
 ## Future Features
-- A list of file names
-    - Detect duplicate files
-    - Option to remove duplicates/files from list
-- Date-based naming (e.g., january_2025_portrait_01.jpg) for file and folder
+- Detect duplicate files and offer to remove them
+- Date-based naming (e.g., january_2025_portrait_01.jpg) for files and folders
 - Option to choose grid size (4 or 6 portraits per page)
-- Option for bigger photo size, 5x7
+- Option for 5×7 photo size
 - Button to generate and download the photo grid as a PDF
-- Styling for a clean, user-friendly interface
 
 ## License
 No license. Feel free to use, misue and abuse it.

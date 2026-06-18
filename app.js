@@ -1,8 +1,20 @@
-// Canvas dimensions (4x6 at 300dpi)
-const CANVAS_WIDTH = 1200;
-const CANVAS_HEIGHT = 1800;
-const PORTRAIT_SLOT = { width: 600, height: 900 };
-const LANDSCAPE_SLOT = { width: 1200, height: 900 };
+// Paper size presets (all at 300dpi). Slot sizes stay 600x900 (portrait)
+// and 1200x900 (landscape) so photos keep the same crop proportions
+// regardless of paper size; only the grid dimensions and margins change.
+const PAPER_SIZES = {
+    '4x6': {
+        canvasWidth: 1200,
+        canvasHeight: 1800,
+        portrait: { slot: { width: 600, height: 900 }, cols: 2, rows: 2 },
+        landscape: { slot: { width: 1200, height: 900 }, cols: 1, rows: 2 }
+    },
+    letter: {
+        canvasWidth: 2550,
+        canvasHeight: 3300,
+        portrait: { slot: { width: 600, height: 900 }, cols: 4, rows: 3 },
+        landscape: { slot: { width: 1200, height: 900 }, cols: 2, rows: 3 }
+    }
+};
 
 // State
 let fileEntries = []; // { id, name, img, orientation }
@@ -21,6 +33,14 @@ const fileList = document.getElementById('file-list');
 const fileListBody = document.getElementById('file-list-body');
 const portraitPreview = document.getElementById('portrait-preview');
 const landscapePreview = document.getElementById('landscape-preview');
+const portraitPreviewTitle = document.getElementById('portrait-preview-title');
+const landscapePreviewTitle = document.getElementById('landscape-preview-title');
+const paperSizeInputs = document.querySelectorAll('input[name="paper-size"]');
+
+function getPaperSize() {
+    const checked = document.querySelector('input[name="paper-size"]:checked');
+    return PAPER_SIZES[checked ? checked.value : '4x6'];
+}
 
 // Event listeners
 if (!dropZone || !fileInput) {
@@ -39,6 +59,11 @@ fileInput.addEventListener('change', handleFileSelect);
 document.getElementById('generate-btn').addEventListener('click', generateGrids);
 document.getElementById('clear-btn').addEventListener('click', clearAll);
 document.getElementById('download-btn').addEventListener('click', downloadZip);
+paperSizeInputs.forEach(input => input.addEventListener('change', () => {
+    if (fileEntries.length > 0) {
+        updateStats();
+    }
+}));
 
 function handleDrop(e) {
     e.preventDefault();
@@ -138,10 +163,14 @@ function getLandscapes() {
 }
 
 function updateStats() {
+    const paperSize = getPaperSize();
+    const portraitsPerGrid = paperSize.portrait.cols * paperSize.portrait.rows;
+    const landscapesPerGrid = paperSize.landscape.cols * paperSize.landscape.rows;
+
     const portraits = getPortraits();
     const landscapes = getLandscapes();
-    const portraitGrids = Math.ceil(portraits.length / 4);
-    const landscapeGrids = Math.ceil(landscapes.length / 2);
+    const portraitGrids = Math.ceil(portraits.length / portraitsPerGrid);
+    const landscapeGrids = Math.ceil(landscapes.length / landscapesPerGrid);
     const totalGrids = portraitGrids + landscapeGrids;
 
     document.getElementById('portrait-count').textContent = portraits.length;
@@ -153,15 +182,16 @@ function updateStats() {
 
     // Check for uneven grids
     const warnings = [];
-    const portraitRemainder = portraits.length % 4;
-    const landscapeRemainder = landscapes.length % 2;
+    const portraitRemainder = portraits.length % portraitsPerGrid;
+    const landscapeRemainder = landscapes.length % landscapesPerGrid;
 
     if (portraitRemainder > 0) {
-        const needed = 4 - portraitRemainder;
-        warnings.push(`Portraits: add ${needed} more for even grids of 4 (or ${portraitRemainder} slot${portraitRemainder > 1 ? 's' : ''} will be empty)`);
+        const needed = portraitsPerGrid - portraitRemainder;
+        warnings.push(`Portraits: add ${needed} more for even grids of ${portraitsPerGrid} (or ${portraitRemainder} slot${portraitRemainder > 1 ? 's' : ''} will be empty)`);
     }
     if (landscapeRemainder > 0) {
-        warnings.push('Landscapes: add 1 more for even grids of 2 (or 1 slot will be empty)');
+        const needed = landscapesPerGrid - landscapeRemainder;
+        warnings.push(`Landscapes: add ${needed} more for even grids of ${landscapesPerGrid} (or ${landscapeRemainder} slot${landscapeRemainder > 1 ? 's' : ''} will be empty)`);
     }
 
     if (warnings.length > 0) {
@@ -187,66 +217,77 @@ function resizeToFill(img, targetWidth, targetHeight) {
     return canvas;
 }
 
+// Builds the (x, y) top-left position of each slot in a grid, centering
+// the grid on the canvas when the slots don't fill it exactly.
+function buildSlotPositions(canvasWidth, canvasHeight, slot, cols, rows) {
+    const marginX = (canvasWidth - slot.width * cols) / 2;
+    const marginY = (canvasHeight - slot.height * rows) / 2;
+    const positions = [];
+    for (let row = 0; row < rows; row++) {
+        for (let col = 0; col < cols; col++) {
+            positions.push({
+                x: marginX + col * slot.width,
+                y: marginY + row * slot.height
+            });
+        }
+    }
+    return positions;
+}
+
+function buildGrids(images, canvasWidth, canvasHeight, slot, positions, preview) {
+    const grids = [];
+    const perGrid = positions.length;
+
+    for (let i = 0; i < images.length; i += perGrid) {
+        const batch = images.slice(i, i + perGrid);
+        const canvas = document.createElement('canvas');
+        canvas.width = canvasWidth;
+        canvas.height = canvasHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = 'white';
+        ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+        batch.forEach((img, j) => {
+            const resized = resizeToFill(img, slot.width, slot.height);
+            ctx.drawImage(resized, positions[j].x, positions[j].y);
+        });
+
+        grids.push(canvas);
+        preview.appendChild(canvas.cloneNode(true));
+        const previewCanvas = preview.lastChild;
+        previewCanvas.getContext('2d').drawImage(canvas, 0, 0);
+    }
+
+    return grids;
+}
+
 function generateGrids() {
+    const paperSize = getPaperSize();
     const portraits = getPortraits();
     const landscapes = getLandscapes();
     generatedGrids = { portrait: [], landscape: [] };
     portraitPreview.innerHTML = '';
     landscapePreview.innerHTML = '';
 
-    // Portrait grids (2x2)
-    const portraitPositions = [
-        { x: 0, y: 0 },
-        { x: 600, y: 0 },
-        { x: 0, y: 900 },
-        { x: 600, y: 900 }
-    ];
+    const portraitPositions = buildSlotPositions(
+        paperSize.canvasWidth, paperSize.canvasHeight,
+        paperSize.portrait.slot, paperSize.portrait.cols, paperSize.portrait.rows
+    );
+    portraitPreviewTitle.textContent = `Portrait Grids (${paperSize.portrait.cols}×${paperSize.portrait.rows})`;
+    generatedGrids.portrait = buildGrids(
+        portraits, paperSize.canvasWidth, paperSize.canvasHeight,
+        paperSize.portrait.slot, portraitPositions, portraitPreview
+    );
 
-    for (let i = 0; i < portraits.length; i += 4) {
-        const batch = portraits.slice(i, i + 4);
-        const canvas = document.createElement('canvas');
-        canvas.width = CANVAS_WIDTH;
-        canvas.height = CANVAS_HEIGHT;
-        const ctx = canvas.getContext('2d');
-        ctx.fillStyle = 'white';
-        ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-
-        batch.forEach((img, j) => {
-            const resized = resizeToFill(img, PORTRAIT_SLOT.width, PORTRAIT_SLOT.height);
-            ctx.drawImage(resized, portraitPositions[j].x, portraitPositions[j].y);
-        });
-
-        generatedGrids.portrait.push(canvas);
-        portraitPreview.appendChild(canvas.cloneNode(true));
-        const previewCanvas = portraitPreview.lastChild;
-        previewCanvas.getContext('2d').drawImage(canvas, 0, 0);
-    }
-
-    // Landscape grids (2x1)
-    const landscapePositions = [
-        { x: 0, y: 0 },
-        { x: 0, y: 900 }
-    ];
-
-    for (let i = 0; i < landscapes.length; i += 2) {
-        const batch = landscapes.slice(i, i + 2);
-        const canvas = document.createElement('canvas');
-        canvas.width = CANVAS_WIDTH;
-        canvas.height = CANVAS_HEIGHT;
-        const ctx = canvas.getContext('2d');
-        ctx.fillStyle = 'white';
-        ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-
-        batch.forEach((img, j) => {
-            const resized = resizeToFill(img, LANDSCAPE_SLOT.width, LANDSCAPE_SLOT.height);
-            ctx.drawImage(resized, landscapePositions[j].x, landscapePositions[j].y);
-        });
-
-        generatedGrids.landscape.push(canvas);
-        landscapePreview.appendChild(canvas.cloneNode(true));
-        const previewCanvas = landscapePreview.lastChild;
-        previewCanvas.getContext('2d').drawImage(canvas, 0, 0);
-    }
+    const landscapePositions = buildSlotPositions(
+        paperSize.canvasWidth, paperSize.canvasHeight,
+        paperSize.landscape.slot, paperSize.landscape.cols, paperSize.landscape.rows
+    );
+    landscapePreviewTitle.textContent = `Landscape Grids (${paperSize.landscape.cols}×${paperSize.landscape.rows})`;
+    generatedGrids.landscape = buildGrids(
+        landscapes, paperSize.canvasWidth, paperSize.canvasHeight,
+        paperSize.landscape.slot, landscapePositions, landscapePreview
+    );
 
     previewSection.classList.remove('hidden');
     downloadActions.classList.remove('hidden');

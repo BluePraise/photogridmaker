@@ -12,8 +12,20 @@
 
 <body>
     <h1>Photo Grid Maker</h1>
-    <p class="subtitle">Create print-ready 4×6 photo grids. Portrait photos go in 2×2 grids, landscape in 2×1 stacks.
+    <p class="subtitle">Create print-ready photo grids. Portrait and landscape photos are sorted into grids sized
+        for your paper.
     </p>
+
+    <div class="paper-size">
+        <label class="paper-size__option">
+            <input type="radio" name="paper-size" value="4x6" checked>
+            4×6 (2×2 portrait / 2×1 landscape)
+        </label>
+        <label class="paper-size__option">
+            <input type="radio" name="paper-size" value="letter">
+            Letter 8.5×11 (4×3 portrait / 2×3 landscape)
+        </label>
+    </div>
 
     <div class="drop-zone" id="drop-zone">
         <p>Drag & drop your photos here</p>
@@ -58,10 +70,10 @@
     </div>
 
     <div class="preview-section hidden" id="preview-section">
-        <h2>Portrait Grids (2×2)</h2>
+        <h2 id="portrait-preview-title">Portrait Grids</h2>
         <div class="preview-grid" id="portrait-preview"></div>
 
-        <h2 class="section-title section-title--spaced">Landscape Grids (2×1)</h2>
+        <h2 class="section-title section-title--spaced" id="landscape-preview-title">Landscape Grids</h2>
         <div class="preview-grid" id="landscape-preview"></div>
     </div>
 
